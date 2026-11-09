@@ -47,6 +47,8 @@ input[type=number]{width:4.2em;padding:4px;border-radius:6px;border:1px solid va
 .chip .x{margin-left:2px;padding:0 4px}
 .act select{width:auto;margin:0}
 .fnote{margin:6px 0 0;font-size:.88rem;color:var(--muted);font-style:italic}
+.chip.tool{border-style:dashed}
+.card.pri{border-color:var(--accent)}
 #sugTitle{font-family:system-ui,sans-serif;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;cursor:pointer}
 [hidden]{display:none!important}
 a.btn{text-decoration:none;color:var(--fg);display:inline-block}
@@ -239,10 +241,15 @@ DATA.forEach(d => d[4].forEach(o => {
   if (by[k]) { links[d[0]].set(k, v); links[k].set(d[0], v); }
 }));
 const names = Object.keys(by).sort();
-let picks = [], query = "";
+let picks = [], query = "", primary = null;
 const $ = id => document.getElementById(id);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
+function addVariant(i){
+  const b = picks[i], used = picks.filter(p => p.name === b.name).map(p => p.prep);
+  picks.splice(i+1, 0, {name:b.name, prep: by[b.name].preps.find(x => !used.includes(x)) || by[b.name].preps[0]});
+  render();
+}
 function add(n){ if (!picks.find(p => p.name === n)) picks.push({name:n, prep:by[n].preps[0]}); $("q").value=""; query=""; render(); }
 function pairVal(a,b){ return links[a].get(b) || 0; }
 const TRAITS = ["acid","sweet","bitter","umami","rich","crunch","heat","aroma"];
@@ -257,32 +264,40 @@ function dishLevels(){ const L = TRAITS.map(() => 0); picks.forEach(p => eff(p).
 function gaps(){ const L = dishLevels(); return TRAITS.map((t,i) => Math.max(0, TARGET[t] - L[i])); }
 function fill(n){ const g = gaps(), tot = g.reduce((a,b) => a+b, 0); return tot ? by[n].prof.reduce((s,v,i) => s + Math.min(v, g[i]), 0) / tot : 0.5; }
 function adj(n){ return Math.round((fill(n) - 0.5) * 40); }
-function base(n){ return picks.reduce((s,p) => s + pairVal(n,p.name), 0); }
-function pct(n){ return Math.max(1, Math.min(100, Math.round(base(n) / picks.length) + adj(n))); }
-function score(n){ return base(n) > 0 ? pct(n) * picks.length : 0; }
+function uniq(){ const seen = new Set(); return picks.filter(p => !seen.has(p.name) && seen.add(p.name)); }
+function base(n){ let w = 0, t = 0; uniq().forEach(p => { const k = p.name === primary ? 2 : 1; w += k; t += k * pairVal(n, p.name); }); return w ? t / w : 0; }
+function pct(n){ return Math.max(1, Math.min(100, Math.round(base(n)) + adj(n))); }
+function score(n){ return base(n) > 0 ? pct(n) : 0; }
 function dtxt(n){ const d = adj(n); return d ? ' (' + (d > 0 ? '+' : '') + d + ' balance)' : ''; }
 
 const PL = {Beet:"beets",Carrot:"carrots",Potato:"potatoes",Mushroom:"mushrooms",Tomato:"tomatoes",Egg:"eggs",Scallop:"scallops",Walnut:"walnuts",Hazelnut:"hazelnuts",Almond:"almonds",Pistachio:"pistachios",Radish:"radishes",Shallot:"shallots",Fig:"figs",Peach:"peaches",Pear:"pears",Apple:"apples",Leek:"leeks","Chicken thigh":"chicken thighs","Sweet potato":"sweet potatoes"};
-function phrase(p){
-  const o = by[p.name], nm = PL[p.name] || p.name.toLowerCase(), w = p.prep.split(" ")[0];
-  return (o.cat !== "Herb" && (/ed$/.test(w) || w === "raw")) ? w + " " + nm : nm;
+function adjOf(p){ const w = p.prep.split(" ")[0]; return (by[p.name].cat !== "Herb" && (/ed$/.test(w) || w === "raw")) ? w : ""; }
+function phrase(p){ const a = adjOf(p); return (a ? a + " " : "") + (PL[p.name] || p.name.toLowerCase()); }
+function groupPhrase(list){
+  if (list.length === 1) return phrase(list[0]);
+  const adjs = list.map(adjOf);
+  if (adjs.every(Boolean) && new Set(adjs).size === adjs.length) return adjs.join(" and ") + " " + (PL[list[0].name] || list[0].name.toLowerCase());
+  return list.map(phrase).join(" and ");
 }
 function dishTitle(){
   if (!picks.length) return "";
-  const big = picks.slice().sort((a,b) => (SIZE[by[b.name].cat]||26) - (SIZE[by[a.name].cat]||26))[0];
-  const rest = picks.filter(p => p !== big).map(phrase);
-  let t = phrase(big);
+  const groups = []; picks.forEach(p => { const g = groups.find(x => x[0].name === p.name); if (g) g.push(p); else groups.push([p]); });
+  const sz = g => SIZE[by[g[0].name].cat] || 26;
+  const mainG = groups.find(g => g[0].name === primary) || groups.slice().sort((a,b) => sz(b) - sz(a))[0];
+  const rest = groups.filter(g => g !== mainG).map(groupPhrase);
+  let t = groupPhrase(mainG);
   if (rest.length) t += " with " + (rest.length > 1 ? rest.slice(0,-1).join(", ") + " and " + rest[rest.length-1] : rest[0]);
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 function render(){
+  if (primary && !picks.some(p => p.name === primary)) primary = null;
   $("dtitle").textContent = dishTitle();
   const tray = $("tray");
   if (!picks.length) tray.innerHTML = '<p class="empty">Nothing yet — choose an ingredient below.</p>';
   else tray.innerHTML = picks.map((p,i) => {
     const o = by[p.name];
-    return '<div class="card"><div class="row"><span class="sw" style="background:'+o.color+'"></span><span class="ic">'+ic(o.name)+'</span><span class="name">'+o.name+'</span><span class="cat">'+o.cat+'</span><button class="x" data-rm="'+i+'" aria-label="Remove">×</button></div>' +
-      (o.note ? '<p class="fnote">' + esc(o.note) + '</p>' : '') + '<div class="chips">' + o.preps.map(pr => '<button class="chip'+(pr===p.prep?' on':'')+'" data-i="'+i+'" data-p="'+pr+'">'+pr+'</button>').join("") + '</div></div>';
+    return '<div class="card'+(p.name===primary?' pri':'')+'"><div class="row"><span class="sw" style="background:'+o.color+'"></span><span class="ic">'+ic(o.name)+'</span><span class="name">'+o.name+'</span><span class="cat">'+o.cat+'</span><button class="x" data-rm="'+i+'" aria-label="Remove">×</button></div>' +
+      (o.note ? '<p class="fnote">' + esc(o.note) + '</p>' : '') + '<div class="chips">' + o.preps.map(pr => '<button class="chip'+(pr===p.prep?' on':'')+'" data-i="'+i+'" data-p="'+pr+'">'+pr+'</button>').join("") + '<button class="chip tool" data-dup="'+i+'">+ another preparation</button><button class="chip tool'+(p.name===primary?' on':'')+'" data-pri="'+p.name+'">★ primary</button></div></div>';
   }).join("") + '<div class="act"><button class="btn" id="copy">Copy dish</button><button class="btn" id="reset">Start over</button></div>';
 
   $("strip").innerHTML = picks.length ? '<div class="strip">' + picks.map(p => '<div style="background:'+by[p.name].color+'"></div>').join("") + '</div>' : "";
@@ -292,7 +307,8 @@ function render(){
     const g = gaps(), need = TRAITS.filter((t,i) => g[i] >= 20);
     msgs.push(need.length ? '<p class="note warn">Consider adding: ' + need.join(", ") + '.</p>' : '<p class="note">Well balanced across the flavour profile.</p>');
     const hv = [];
-    for (let i = 0; i < picks.length; i++) for (let j = i+1; j < picks.length; j++) { const v = pairVal(picks[i].name, picks[j].name); if (v) hv.push(v); }
+    const u = uniq();
+    for (let i = 0; i < u.length; i++) for (let j = i+1; j < u.length; j++) { const v = pairVal(u[i].name, u[j].name); if (v) hv.push(v); }
     if (hv.length) msgs.push('<p class="note">Harmony: <b>' + Math.round(hv.reduce((a,b) => a+b, 0) / hv.length) + '/100</b> (average of ' + hv.length + ' rated pairing' + (hv.length > 1 ? 's' : '') + ')</p>');
     if (picks.length >= 3 && new Set(picks.map(p => p.prep)).size === 1) msgs.push('<p class="note warn">Every item uses the same preparation. Try varying texture and temperature.</p>');
   }
@@ -317,9 +333,9 @@ document.addEventListener("click", e => {
   if (t.dataset.add) add(t.dataset.add);
   else if (t.dataset.rm) { picks.splice(+t.dataset.rm,1); render(); }
   else if (t.dataset.p) { picks[+t.dataset.i].prep = t.dataset.p; render(); }
-  else if (t.id === "reset") { picks = []; render(); }
+  else if (t.id === "reset") { picks = []; primary = null; render(); }
   else if (t.id === "copy") {
-    const txt = picks.map(p => p.name + " (" + p.prep + ")").join(" + ");
+    const txt = picks.map(p => (p.name === primary ? "★ " : "") + p.name + " (" + p.prep + ")").join(" + ");
     try { navigator.clipboard.writeText(txt); t.textContent = "Copied"; setTimeout(() => t.textContent = "Copy dish", 1200); } catch (err) { t.textContent = "Copy not available"; }
   }
 });
@@ -422,7 +438,9 @@ $("ruleList").addEventListener("input", e => {
 });
 document.addEventListener("click", e => {
   const t = e.target.closest("button"); if (!t) return; const d = t.dataset;
-  if (d.bc) { browseCat = d.bc; renderCats(); }
+  if (d.dup !== undefined) addVariant(+d.dup);
+  else if (d.pri) { primary = primary === d.pri ? null : d.pri; render(); }
+  else if (d.bc) { browseCat = d.bc; renderCats(); }
   else if (d.be) { editing = d.be; renderEdit(); if ($("edSel").scrollIntoView) $("edSel").scrollIntoView({block:"start"}); }
   else if (t.id === "catAdd") { $("addBox").open = true; $("addCat").value = browseCat || ""; $("addName").focus(); }
   else if (d.rd) { const k = d.rd.split("|"); delete PREP_RULES[+k[0]][1][k[1]]; dirty = true; renderRules(); }

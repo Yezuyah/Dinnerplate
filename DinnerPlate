@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dish Builder</title>
+<style>
+:root{--bg:#faf8f4;--fg:#1f1d1a;--muted:#6b665e;--card:#fff;--border:#e2ddd3;--accent:#b4491f;--accent-fg:#fff;--chip:#f1ede4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17160f;--fg:#f0ece3;--muted:#a39d90;--card:#221f17;--border:#3a362b;--accent:#e0723f;--accent-fg:#17160f;--chip:#2e2a20}}
+:root[data-theme="dark"]{--bg:#17160f;--fg:#f0ece3;--muted:#a39d90;--card:#221f17;--border:#3a362b;--accent:#e0723f;--accent-fg:#17160f;--chip:#2e2a20}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Georgia,"Times New Roman",serif;line-height:1.45}
+main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.7rem;margin:0 0 2px}
+.sub{color:var(--muted);margin:0 0 18px;font-family:system-ui,sans-serif;font-size:.92rem}
+h2{font-family:system-ui,sans-serif;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.sw{display:inline-block;width:18px;height:18px;border-radius:50%;border:1px solid rgba(128,128,128,.45);vertical-align:middle;flex:none}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.name{font-weight:bold;font-size:1.05rem}
+.cat{color:var(--muted);font-family:system-ui,sans-serif;font-size:.8rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+button{font-family:system-ui,sans-serif;cursor:pointer;color:var(--fg)}
+.chip{border:1px solid var(--border);background:var(--chip);border-radius:999px;padding:5px 11px;font-size:.84rem}
+.chip.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.x{margin-left:auto;background:none;border:none;color:var(--muted);font-size:1.2rem;padding:2px 8px}
+.strip{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.strip div{flex:1}
+input[type=search]{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:1rem;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.pick{display:flex;align-items:center;gap:8px;text-align:left;border:1px solid var(--border);background:var(--card);border-radius:10px;padding:9px 10px;font-size:.95rem;font-family:Georgia,serif}
+.pick small{display:block;color:var(--muted);font-family:system-ui,sans-serif;font-size:.74rem}
+.note{font-family:system-ui,sans-serif;font-size:.9rem;margin:4px 0}
+.warn{color:var(--accent)}
+.act{display:flex;gap:8px;margin-top:12px}
+.btn{border:1px solid var(--border);background:var(--chip);border-radius:8px;padding:8px 14px;font-size:.9rem}
+.dtitle{font-size:1.35rem;font-style:italic;margin:0 0 10px}
+.tabs{display:flex;gap:8px;margin-bottom:6px}
+.adds{display:grid;gap:8px;margin-top:10px}
+.adds input:not([type=color]){padding:9px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:1rem}
+.adds input[type=color]{width:100%;height:40px;border:1px solid var(--border);border-radius:8px;background:var(--card)}
+summary{cursor:pointer;font-family:system-ui,sans-serif}
+input[type=number]{width:4.2em;padding:4px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg)}
+.chip input{margin:0 2px}
+.chip .x{margin-left:2px;padding:0 4px}
+.act select{width:auto;margin:0}
+#sugTitle{font-family:system-ui,sans-serif;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;cursor:pointer}
+[hidden]{display:none!important}
+a.btn{text-decoration:none;color:var(--fg);display:inline-block}
+.coffee{background:#ffdd00;color:#1f1d1a!important;border-color:#e5c700;font-weight:bold}
+.foot{margin-top:32px;padding-top:14px;border-top:1px solid var(--border);text-align:center}
+.foot details{text-align:left;margin-bottom:14px}
+.prow{display:flex;align-items:center;gap:8px;font-family:system-ui,sans-serif;font-size:.8rem;margin:2px 0}
+.prow span:first-child{width:4.5em;text-transform:capitalize;color:var(--muted)}
+.prow span:last-child{width:2em;text-align:right}
+.bar{flex:1;height:8px;background:var(--chip);border-radius:4px;overflow:hidden}
+.bar div{height:100%;background:var(--accent)}
+.tab.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:1rem;margin-bottom:8px}
+.erow{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid var(--border);font-family:system-ui,sans-serif;font-size:.92rem}
+.erow label{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
+.erow input[type=range]{width:34%;min-width:90px}
+.erow output{width:2.2em;text-align:right;color:var(--muted)}
+textarea{width:100%;margin-top:10px;background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:10px;padding:8px;font-family:ui-monospace,monospace;font-size:.78rem}
+.plate{max-width:320px;margin:0 auto 12px}.plate svg{width:100%;height:auto;display:block}.ic{font-size:1.25rem;line-height:1}
+.empty{color:var(--muted);font-family:system-ui,sans-serif;font-size:.92rem}
+</style>
+</head>
+<body>
+<main>
+<h1>Dish Builder</h1>
+<p class="sub">Pick an ingredient, see what pairs, choose a preparation, and build the dish one item at a time.</p>
+
+<div class="tabs"><button class="btn tab on" data-mode="build">Build a dish</button><button class="btn tab" data-mode="edit">Edit pairings</button></div>
+<div id="buildView">
+<h2>Your dish</h2>
+<div class="dtitle" id="dtitle"></div>
+<div id="tray"></div>
+<div id="strip"></div>
+<div id="balance"></div>
+<div id="profile"></div>
+
+<details id="ingBox" open>
+<summary id="sugTitle">Start with an ingredient</summary>
+<input type="search" id="q" placeholder="Search ingredients…" autocomplete="off">
+<div id="list"></div>
+</details>
+</div>
+<div id="editView" hidden>
+<details class="card" id="addBox"><summary><b>Add a new ingredient</b></summary>
+<div class="adds">
+<input id="addName" placeholder="Name (e.g. Radicchio)" autocomplete="off">
+<input type="color" id="addColor" value="#cccccc" aria-label="Colour">
+<input id="addCat" list="catList" placeholder="Category (e.g. Herb, Acid, Crunch)" autocomplete="off"><datalist id="catList"></datalist>
+<input id="addPreps" placeholder="Preparations, separated by commas" autocomplete="off">
+<input id="addIcon" placeholder="Icon emoji (optional)" autocomplete="off">
+<button class="btn" id="addBtn">Add ingredient</button>
+<p class="note" id="addMsg"></p>
+</div></details>
+<h2>Edit pairings</h2>
+<p class="note warn">Edits live only in this session. When finished, press “Show data to copy” and paste the result over the data block in your file.</p>
+<p class="note">Pick an ingredient, tick what pairs with it, and set the strength from 1 (weak) to 100 (perfect).</p>
+<details class="card" id="catBox" open><summary><b>Browse by category</b></summary>
+<div class="chips" id="catChips"></div>
+<div class="chips" id="catItems"></div>
+<div class="act"><button class="btn" id="catAdd">Add an ingredient to this category</button></div>
+</details>
+<select id="edSel"></select>
+<details class="card"><summary><b>Edit this ingredient’s details</b></summary>
+<div class="adds"><input type="color" id="dColor" aria-label="Colour"><input id="dCat" list="catList" placeholder="Category" autocomplete="off"><input id="dPreps" placeholder="Preparations, separated by commas" autocomplete="off"><input id="dIcon" placeholder="Icon emoji" autocomplete="off"></div>
+<p class="note">Flavour profile baseline (0 to 100). This is the ingredient before any cooking.</p><div id="dTraits"></div></details>
+<input type="search" id="edQ" placeholder="Filter the list…" autocomplete="off">
+<details class="card" open><summary><b>Pairings for this ingredient</b></summary><div id="edList"></div></details>
+<details class="card" id="ruleBox"><summary><b>Prep effects</b></summary>
+<p class="note">When a picked ingredient’s preparation contains one of a rule’s words, those traits are added to (+) or taken from (−) that ingredient’s baseline.</p>
+<div id="ruleList"></div>
+<div class="act"><button class="btn" id="addRule">Add a rule</button></div></details>
+<details class="card"><summary><b>Site settings</b></summary>
+<p class="note">Shown to visitors. Leave a box empty to hide that feature.</p>
+<div class="adds">
+<input id="sCoffee" placeholder="Buy Me a Coffee link (https://...)" autocomplete="off">
+<input id="sForm" placeholder="Suggestion form link, e.g. a Google Form (https://...)" autocomplete="off">
+<input id="sEmail" placeholder="Or an email address to receive suggestions" autocomplete="off">
+</div></details>
+<div class="act"><button class="btn" id="exportBtn">Show data to copy</button><button class="btn" id="delBtn">Delete this ingredient</button></div>
+<textarea id="out" readonly hidden rows="10"></textarea>
+</div>
+<footer class="foot">
+<details class="card" id="sugBox" hidden><summary><b>Suggest an ingredient or pairing</b></summary>
+<div class="adds">
+<div id="sgFields" class="adds">
+<select id="sgType"><option>New ingredient</option><option>New pairing</option><option>Correction</option><option>Other</option></select>
+<textarea id="sgText" rows="4" placeholder="What would you like to see added or changed?"></textarea>
+<label class="note"><input type="checkbox" id="sgDish" checked> Include my current dish</label>
+</div>
+<button class="btn" id="sgSend">Send suggestion</button>
+</div></details>
+<a class="btn coffee" id="coffeeBtn" href="#" target="_blank" rel="noopener noreferrer" hidden>☕ Buy me a coffee</a>
+</footer>
+</main>
+
+<script>
+/* ===== YOUR DATA — edit here, no coding needed =====
+Each line is one ingredient, in this order:
+["Name", "#colour", "Category", ["prep 1","prep 2",...], [["Pairs with",80],["Pairs with",65],...], "🙂", [40,60,0,0,0,70,0,10]]
+- Each pairing is a name plus a strength from 1 to 100. A plain name with no number counts as 70.
+- Then the icon (an emoji, or ""), then the flavour profile: eight numbers from 0 to 100 in this order: acid, sweet, bitter, umami, rich, crunch, heat, aroma.
+- Easiest: use the Edit pairings tab (ingredients, pairings, details, prep effects), press Show data to copy, then replace everything from "const DATA = [" down to the END OF DATA line with what it gives you.
+- Pairings only need to be written once; the app links them both ways.
+- Names in the pairing list must match another ingredient's name exactly.
+- Colours are hex codes (search "colour picker" for any shade).
+- Categories used for the balance check: Acid, Crunch, Herb, Dairy, Fat. Others are free-form. */
+const DATA = [
+["Almond","#d2b48c","Crunch",["toasted","fried","crushed","as a paste","praline"],["Honey","Brown butter","Orange","Apple"],"🌰",[0,15,10,10,40,80,0,10]],
+["Anchovy","#8a6f5a","Umami",["as a marinade","glaze","in a dressing","reduced"],["Garlic","Lemon","Capers","Olive oil","Broccoli","Lamb"],"🐟",[5,15,0,90,15,0,0,10]],
+["Apple","#9cc24a","Fruit",["raw matchsticks","roasted","pureed","pickled","caramelized"],["Walnut","Thyme","Honey","Goat cheese","Brown butter"],"🍎",[40,60,5,0,0,70,0,20]],
+["Apricot","#f3a03c","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Almond","Honey","Thyme","Lamb","Pistachio","Ricotta"],"🍑",[30,65,5,0,0,30,0,20]],
+["Artichoke","#8a9a5b","Vegetable",["roasted","grilled","raw","blanched","pickled"],["Lemon","Garlic","Parmesan","Brown butter","Thyme","Olive oil"],"🌱",[5,20,30,20,5,15,0,15]],
+["Arugula","#3f7d3a","Brassica",["roasted","charred","raw shaved","pickled","pureed"],["Lemon","Parmesan","Pear","Walnut","Olive oil","Fig"],"🥬",[5,15,45,15,5,20,20,15]],
+["Asparagus","#7aa63c","Vegetable",["blanched","grilled","raw shaved","roasted"],["Egg","Lemon","Parmesan","Brown butter","Mint","Hazelnut","Scallop"],"🌱",[5,20,25,10,5,45,0,15]],
+["Avocado","#8aa83a","Fat",["raw sliced","mashed","charred","pickled"],["Lime","Cilantro","Chili","Tomato","Egg","Shrimp"],"🥑",[0,5,0,5,65,0,0,10]],
+["Bacon","#c0555a","Protein",["crisped","braised","rendered","candied"],["Maple syrup","Egg","Brussels sprouts","Corn","Cabbage","Pear"],"🥓",[0,5,0,70,85,10,0,10]],
+["Balsamic vinegar","#3b2a1e","Acid",["splash to finish","reduced","in a vinaigrette"],["Strawberry","Burrata","Cherry","Radicchio","Brussels sprouts","Parmesan"],"🍷",[65,40,0,15,0,0,0,25]],
+["Basil","#2e7d32","Herb",["torn raw","oil blended","fried leaves"],["Lemon","Chili","Garlic"],"🌿",[5,0,10,0,0,5,0,75]],
+["Beef","#8b2e2e","Protein",["seared steak","slow-braised","raw tartare","grilled","cured"],["Horseradish","Garlic","Rosemary","Thyme","Shallot","Mushroom","Sherry vinegar","Soy sauce","Smoked paprika"],"🥩",[0,5,0,70,45,10,0,10]],
+["Beet","#8e1b3a","Root",["roasted","salt-baked","pickled","shaved raw","pureed"],["Goat cheese","Orange","Walnut","Dill","Horseradish","Sherry vinegar","Yogurt","Apple","Mint"],"🟣",[0,55,15,10,5,30,0,15]],
+["Bell pepper","#d63a2f","Vegetable",["roasted","grilled","raw","blanched","pickled"],["Garlic","Olive oil","Basil","Tomato","Chorizo","Eggplant"],"🫑",[10,45,15,10,5,50,0,15]],
+["Black pepper","#3a3a3a","Spice",["freshly cracked","toasted","in a sauce"],["Strawberry","Lemon","Parmesan","Beef","Egg","Olive oil"],"⚫",[0,5,10,10,0,0,40,45]],
+["Blackberry","#3a2b4a","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Lemon","Thyme","Mascarpone","Almond","Goat cheese","Mint"],"🫐",[40,45,5,0,0,30,0,20]],
+["Blue cheese","#c9cfd8","Dairy",["fresh","whipped","baked","fried"],["Pear","Walnut","Honey","Celery","Endive","Beef"],"🧀",[15,10,10,55,55,0,0,5]],
+["Blueberry","#3f51a3","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Lemon","Lime","Ricotta","Thyme","Almond","Maple syrup"],"🫐",[25,50,5,0,0,30,0,20]],
+["Bok choy","#8fbf6a","Brassica",["roasted","charred","raw shaved","pickled","pureed"],["Garlic","Ginger","Soy sauce","Sesame","Chili","Miso"],"🥬",[5,15,15,15,5,35,5,15]],
+["Breadcrumbs","#d8b06a","Crunch",["toasted","crushed","as a paste","praline"],["Parmesan","Garlic","Lemon","Parsley","Broccoli","Cauliflower"],"🍞",[0,15,10,10,10,85,0,10]],
+["Broccoli","#4f8f3a","Brassica",["roasted","charred","raw shaved","pickled","pureed"],["Garlic","Lemon","Chili","Parmesan","Soy sauce","Almond"],"🥦",[5,15,25,15,5,40,5,15]],
+["Brown butter","#b8860b","Fat",["nutty and strained","whipped","as a vinaigrette base"],["Walnut","Hazelnut"],"🧈",[0,15,0,25,90,0,0,10]],
+["Brussels sprouts","#6d9a4a","Brassica",["roasted","charred","raw shaved","pickled","pureed"],["Bacon","Maple syrup","Balsamic vinegar","Apple","Brown butter","Walnut"],"🥬",[5,15,30,15,5,40,5,15]],
+["Burrata","#faf6ee","Dairy",["fresh","whipped","baked","fried"],["Tomato","Basil","Peach","Olive oil","Balsamic vinegar","Fig"],"🧀",[15,10,0,20,75,0,0,5]],
+["Cabbage","#a8c686","Brassica",["charred wedges","braised","raw shaved","pickled","fermented"],["Apple","Pork belly","Sherry vinegar","Brown butter","Dill","Horseradish","Chili"],"🥬",[5,15,20,15,5,55,5,15]],
+["Capers","#6f8a4a","Acid",["splash to finish","reduced","in a vinaigrette"],["Lemon","Halibut","Egg","Olive oil","Tomato","Salmon"],"🫒",[60,10,0,30,0,5,0,25]],
+["Cardamom","#a9b58a","Spice",["toasted whole","ground","bloomed in fat","infused"],["Orange","Date","Carrot","Honey","Coffee","Yogurt"],"🌿",[0,10,10,10,0,0,50,80]],
+["Carrot","#e8791d","Root",["roasted","glazed","raw ribbons","pureed","charred"],["Ginger","Orange","Cumin","Honey","Yogurt","Thyme","Brown butter","Hazelnut","Miso"],"🥕",[0,50,10,10,5,45,0,10]],
+["Cashew","#e0c28a","Crunch",["toasted","crushed","as a paste","praline"],["Coconut","Chili","Ginger","Broccoli","Chicken thigh","Cilantro"],"🥜",[0,20,10,10,40,70,0,10]],
+["Cauliflower","#efe6cf","Brassica",["roasted","charred","pureed","raw shaved","pickled"],["Brown butter","Parmesan","Cumin","Lemon","Hazelnut","Garlic","Chili","Miso","Scallop"],"🥦",[5,15,20,15,5,35,5,15]],
+["Celery","#b5d98a","Vegetable",["roasted","grilled","raw","blanched","pickled"],["Apple","Lemon","Blue cheese","Walnut","Parsley","Dill"],"🌿",[5,20,15,10,5,75,0,35]],
+["Celery root","#d8cfb0","Root",["roasted","pureed","raw shaved","pickled","charred"],["Apple","Hazelnut","Brown butter","Thyme","Mushroom","Lemon"],"🌱",[0,20,10,10,5,25,0,25]],
+["Cheddar","#f0a830","Dairy",["fresh","whipped","baked","fried"],["Apple","Potato","Mustard","Onion","Bacon","Broccoli"],"🧀",[15,10,0,45,50,0,0,5]],
+["Cherry","#8e1b2d","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Almond","Chocolate","Duck breast","Balsamic vinegar","Pistachio","Ricotta"],"🍒",[30,60,5,0,0,30,0,20]],
+["Chicken thigh","#d9a066","Protein",["roasted skin-on","grilled","braised","fried","poached"],["Lemon","Garlic","Thyme","Ginger","Honey","Miso","Yogurt","Cumin"],"🍗",[0,5,0,55,50,10,0,10]],
+["Chickpeas","#d9b46a","Protein",["seared","roasted","grilled","braised","poached"],["Cumin","Lemon","Garlic","Tahini","Spinach","Yogurt"],"🌱",[0,15,0,25,10,20,0,10]],
+["Chili","#c1121f","Spice",["fresh sliced","dried flakes","charred","infused oil","pickled"],["Honey","Lemon"],"🌶️",[0,5,10,10,0,0,90,55]],
+["Chives","#5aa04a","Herb",["raw leaves","oil blended","fried","infused in fat"],["Egg","Potato","Yogurt","Salmon","Lobster","Brown butter"],"🌿",[5,0,10,0,0,5,10,65]],
+["Chocolate","#3b2a1e","Sweet",["melted","shaved","as a sauce","cocoa nib"],["Cherry","Raspberry","Coffee","Almond","Orange","Chili"],"🍫",[0,60,45,0,30,10,0,10]],
+["Chorizo","#b02a1f","Protein",["seared","roasted","grilled","braised","poached"],["Potato","Bell pepper","Egg","Smoked paprika","Garlic","White beans"],"🌭",[0,5,0,65,70,10,30,10]],
+["Cilantro","#4caf50","Herb",["raw leaves","oil blended","pickled stems","as chutney"],["Lime","Chili","Ginger","Garlic"],"🌿",[5,0,10,0,0,5,0,75]],
+["Cinnamon","#a0522d","Spice",["toasted whole","ground","bloomed in fat","infused"],["Apple","Squash","Honey","Plum","Cardamom","Date"],"🟤",[0,30,10,10,0,0,15,70]],
+["Clams","#c9b79a","Protein",["seared","roasted","grilled","braised","poached"],["Garlic","Chorizo","Parsley","Lemon","Shallot","Brown butter"],"🐚",[0,5,0,55,45,10,0,10]],
+["Coconut","#f1ece0","Fat",["toasted flakes","as milk","grated fresh"],["Lime","Chili","Mango","Pineapple","Cilantro","Ginger"],"🥥",[0,25,0,15,65,30,0,10]],
+["Cod","#f0ebe0","Protein",["roasted","pan-seared","poached","cured","steamed"],["Lemon","Parsley","Brown butter","Potato","Leek","Tomato","Garlic","Smoked paprika"],"🐟",[0,15,0,40,20,10,0,10]],
+["Coffee","#4a2f1a","Sweet",["as a rub","infused","reduced","ground"],["Chocolate","Mascarpone","Cardamom","Hazelnut","Date","Beef"],"☕",[0,5,70,0,0,0,0,60]],
+["Coriander seed","#c9a56b","Spice",["toasted whole","ground","bloomed in fat","infused"],["Orange","Carrot","Lamb","Lemon","Cumin","Beet"],"🌰",[0,5,10,10,0,0,5,70]],
+["Corn","#f2c230","Vegetable",["charred on the cob","raw kernels","pureed","grilled","pickled kernels"],["Lime","Chili","Cilantro","Brown butter","Basil","Feta","Smoked paprika","Shrimp"],"🌽",[5,55,15,10,5,40,0,15]],
+["Crab","#e86a4a","Protein",["seared","roasted","grilled","braised","poached"],["Lemon","Avocado","Corn","Brown butter","Chili","Fennel"],"🦀",[0,35,0,45,20,10,0,10]],
+["Cream","#fbf6e6","Dairy",["fresh","whipped","baked","fried"],["Mushroom","Potato","Leek","Vanilla","Strawberry","Saffron"],"🥛",[15,10,0,20,80,0,0,5]],
+["Cucumber","#8fcf7a","Vegetable",["roasted","grilled","raw","blanched","pickled"],["Dill","Yogurt","Mint","Lemon","Rice vinegar","Sesame"],"🥒",[5,10,15,10,5,75,0,15]],
+["Cumin","#a8742a","Spice",["toasted whole","ground","bloomed in fat"],["Lemon","Honey","Chili"],"🌰",[0,5,10,25,0,0,15,60]],
+["Date","#6b3b25","Sweet",["drizzled","glaze","reduced"],["Almond","Goat cheese","Lamb","Cardamom","Walnut","Orange"],"🟤",[0,85,0,0,5,0,0,10]],
+["Dill","#4f9a4a","Herb",["raw fronds","oil blended","pickled stems"],["Lemon","Yogurt","Horseradish"],"🌿",[5,0,10,0,0,5,0,75]],
+["Duck breast","#7a3b2e","Protein",["seared skin-on","cured","roasted","smoked"],["Orange","Fig","Pear","Thyme","Honey","Sherry vinegar","Soy sauce","Ginger","Cabbage"],"🦆",[0,5,0,60,75,10,0,10]],
+["Egg","#f4c542","Protein",["soft-boiled","poached","fried","jammy","cured yolk"],["Brown butter","Chili","Parmesan","Dill","Miso"],"🥚",[0,5,0,40,55,10,0,10]],
+["Eggplant","#4b2e5e","Vegetable",["charred and smoky","roasted","fried","confit","pureed"],["Miso","Garlic","Yogurt","Cumin","Mint","Chili","Honey"],"🍆",[5,20,20,20,15,10,0,15]],
+["Endive","#e8ebb0","Vegetable",["roasted","grilled","raw","blanched","pickled"],["Walnut","Blue cheese","Pear","Lemon","Orange","Hazelnut"],"🥬",[5,20,55,10,5,65,0,15]],
+["Fennel","#b9d08b","Vegetable",["shaved raw","braised","charred","pickled"],["Orange","Lemon","Apple","Salmon","Scallop","Dill","Parmesan"],"🌿",[5,25,15,10,5,60,0,55]],
+["Feta","#f5f0e0","Dairy",["crumbled","marinated","baked","whipped","fried"],["Mint","Lemon","Honey","Tomato","Eggplant","Dill"],"🧀",[25,10,0,40,45,0,0,5]],
+["Fig","#6b3a5b","Fruit",["raw","roasted","jam","grilled","pickled"],["Goat cheese","Honey","Thyme","Walnut","Sherry vinegar","Ricotta","Pistachio"],"🟣",[5,75,5,0,0,30,0,20]],
+["Fish sauce","#a0522d","Umami",["as a marinade","glaze","in a dressing","reduced"],["Lime","Chili","Garlic","Pineapple","Lemongrass","Cilantro"],"🥢",[10,15,0,85,10,0,0,10]],
+["Garlic","#e9e0c9","Aromatic",["raw grated","roasted whole","confit","fried chips","black"],["Chili","Ginger","Miso"],"🧄",[5,5,10,20,0,10,40,60]],
+["Ginger","#d4a62a","Aromatic",["raw grated","pickled","infused","candied"],["Chili","Honey","Lemon","Miso"],"🌱",[10,10,10,15,0,10,55,60]],
+["Goat cheese","#f6f3ea","Dairy",["crumbled fresh","whipped","baked","marinated in oil"],["Honey","Walnut","Hazelnut","Mint","Thyme","Basil"],"🧀",[35,10,0,25,55,0,0,5]],
+["Grape","#7a3b7a","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Walnut","Goat cheese","Rosemary","Sherry vinegar","Almond","Chicken thigh"],"🍇",[25,65,5,0,0,30,0,20]],
+["Grapefruit","#f58a7a","Acid",["splash to finish","reduced","in a vinaigrette"],["Fennel","Avocado","Mint","Honey","Shrimp","Salmon"],"🍊",[65,30,30,0,0,0,0,40]],
+["Green beans","#5a9a3c","Vegetable",["roasted","grilled","raw","blanched","pickled"],["Garlic","Almond","Lemon","Shallot","Brown butter","Tomato"],"🌱",[5,20,15,10,5,55,0,15]],
+["Gruyere","#e8c27a","Dairy",["fresh","whipped","baked","fried"],["Onion","Potato","Mushroom","Thyme","Leek","Egg"],"🧀",[15,10,0,55,50,0,0,5]],
+["Halibut","#f2eee4","Protein",["seared","roasted","grilled","braised","poached"],["Lemon","Brown butter","Asparagus","Fennel","Peas","Capers"],"🐟",[0,5,0,35,25,10,0,10]],
+["Hazelnut","#8b5a2b","Crunch",["toasted","praline","crushed","as a paste"],["Honey","Brown butter"],"🌰",[0,15,10,10,45,80,0,10]],
+["Honey","#e0a526","Sweet",["drizzled","glaze","infused with chili","whipped"],["Lemon"],"🍯",[0,95,0,0,0,0,0,10]],
+["Horseradish","#e6e1cf","Aromatic",["fresh grated","in a cream","pickled"],["Lemon","Yogurt","Apple"],"🌱",[5,5,10,15,0,10,70,40]],
+["Kale","#2f5d34","Brassica",["roasted","charred","raw shaved","pickled","pureed"],["Garlic","Lemon","Parmesan","Chili","Sherry vinegar","Walnut"],"🥬",[5,15,40,15,5,30,5,15]],
+["Lamb","#b5524a","Protein",["roasted rack","braised shoulder","grilled","seared","slow-roasted"],["Rosemary","Garlic","Mint","Cumin","Yogurt","Lemon","Feta","Eggplant","Parsley"],"🍖",[0,5,0,65,60,10,0,25]],
+["Leek","#9ccf7d","Vegetable",["braised","charred","confit","fried","pureed"],["Potato","Brown butter","Thyme","Egg","Parmesan","Lemon","Tarragon","Cod"],"🧅",[5,20,15,10,5,20,0,30]],
+["Lemon","#f2d43d","Acid",["juice","zest","preserved","charred","pickled rind"],[],"🍋",[90,10,10,0,0,0,0,40]],
+["Lemongrass","#c5d68a","Herb",["raw leaves","oil blended","fried","infused in fat"],["Ginger","Lime","Coconut","Chili","Shrimp","Chicken thigh"],"🌿",[15,0,10,0,0,5,0,85]],
+["Lentils","#9a6b3a","Protein",["seared","roasted","grilled","braised","poached"],["Carrot","Garlic","Cumin","Lemon","Thyme","Bacon"],"🌱",[0,10,0,40,10,10,0,10]],
+["Lime","#8bc34a","Acid",["juice","zest","charred","pickled","preserved"],["Chili","Cilantro","Mint"],"🟢",[85,10,0,0,0,0,0,45]],
+["Lobster","#d2452f","Protein",["seared","roasted","grilled","braised","poached"],["Brown butter","Lemon","Tarragon","Corn","Saffron","Chives"],"🦞",[0,35,0,45,35,10,0,10]],
+["Mango","#f5a623","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Lime","Chili","Cilantro","Coconut","Shrimp","Mint"],"🥭",[20,75,5,0,0,30,0,20]],
+["Maple syrup","#b5651d","Sweet",["drizzled","glaze","reduced","in a vinaigrette"],["Brown butter","Walnut","Chili","Miso"],"🍁",[0,95,0,0,0,0,0,15]],
+["Mascarpone","#faf3e0","Dairy",["fresh","whipped","baked","fried"],["Strawberry","Cherry","Raspberry","Honey","Coffee","Chocolate"],"🧀",[5,10,0,20,75,0,0,5]],
+["Mint","#3fb68b","Herb",["raw chiffonade","blended into sauce","infused"],["Lemon","Chili","Ginger"],"🌿",[5,0,10,0,0,5,0,80]],
+["Mirin","#e8c27a","Umami",["as a marinade","glaze","in a dressing","reduced"],["Soy sauce","Ginger","Salmon","Miso","Tofu","Chicken thigh"],"🍶",[5,55,0,40,10,0,0,10]],
+["Miso","#b5803f","Umami",["glaze","in a butter","in a dressing","cured with"],["Honey","Brown butter"],"🥣",[5,20,0,90,10,0,0,10]],
+["Mozzarella","#f7f3e8","Dairy",["fresh","whipped","baked","fried"],["Tomato","Basil","Olive oil","Peach","Eggplant","Balsamic vinegar"],"🧀",[15,10,0,20,45,0,0,5]],
+["Mushroom","#8a6a4b","Fungi",["seared","roasted","confit","pickled","dried and powdered"],["Thyme","Garlic","Sherry vinegar","Egg","Parmesan","Brown butter","Miso","Chicken thigh","Potato"],"🍄",[0,5,5,80,10,15,0,25]],
+["Mussels","#6b5d7a","Protein",["seared","roasted","grilled","braised","poached"],["Garlic","Shallot","Parsley","Tomato","Chorizo","Saffron"],"🐚",[0,20,0,55,45,10,0,10]],
+["Mustard","#d9b323","Aromatic",["raw","pickled","roasted","infused"],["Pork tenderloin","Honey","Potato","Cheddar","Turnip","Beef"],"🟡",[25,5,10,15,0,10,50,35]],
+["Nori","#2a3b2a","Umami",["as a marinade","glaze","in a dressing","reduced"],["Rice","Sesame","Tuna","Avocado","Egg","Soy sauce"],"⬛",[5,15,10,80,10,0,0,10]],
+["Nutmeg","#8b5a2b","Spice",["toasted whole","ground","bloomed in fat","infused"],["Spinach","Squash","Cream","Potato","Cinnamon","Apple"],"🌰",[0,10,10,10,0,0,50,65]],
+["Okra","#6f9a4a","Vegetable",["roasted","grilled","raw","blanched","pickled"],["Tomato","Chili","Garlic","Lemon","Cumin","Corn"],"🌱",[5,20,15,10,5,25,0,15]],
+["Olive","#5d6b3a","Umami",["raw","roasted","fried","as a tapenade"],["Lemon","Orange","Rosemary","Feta","Tomato","Fennel"],"🫒",[20,15,30,50,20,0,0,10]],
+["Olive oil","#b5b24a","Fat",["drizzled","infused","as a vinaigrette base"],["Lemon","Garlic","Tomato","Basil","Rosemary","Arugula"],"🫒",[0,5,10,15,85,0,0,20]],
+["Onion","#e9cfa0","Aromatic",["raw","pickled","roasted","infused"],["Thyme","Balsamic vinegar","Brown butter","Garlic","Beef","Parmesan"],"🧅",[5,30,10,15,0,10,25,35]],
+["Orange","#f28c28","Acid",["juice","segments","zest","reduced","charred"],["Honey","Chili","Mint"],"🍊",[55,55,0,0,0,0,0,45]],
+["Oregano","#6b8a4a","Herb",["raw leaves","oil blended","fried","infused in fat"],["Tomato","Lamb","Lemon","Feta","Garlic","Olive oil"],"🌿",[5,0,20,0,0,5,0,75]],
+["Parmesan","#e8c872","Dairy",["shaved","grated fine","crisped","broth infused"],["Basil","Thyme","Walnut","Honey"],"🧀",[15,10,0,80,40,0,0,5]],
+["Parsley","#3d8c40","Herb",["raw chopped","oil blended","fried","as salsa verde"],["Lemon","Garlic","Shallot","Chili"],"🌿",[5,0,15,0,0,5,0,75]],
+["Parsnip","#eadfc0","Root",["roasted","pureed","raw shaved","pickled","charred"],["Brown butter","Maple syrup","Thyme","Apple","Ginger","Hazelnut"],"🥕",[0,55,10,10,5,25,0,10]],
+["Peach","#f5a77a","Fruit",["raw sliced","grilled","roasted","pickled","caramelized"],["Basil","Goat cheese","Honey","Mint","Ricotta","Thyme","Lime","Pistachio"],"🍑",[25,70,5,0,0,30,0,20]],
+["Peanut","#c9a56b","Crunch",["toasted","crushed","as a paste","praline"],["Chili","Lime","Ginger","Soy sauce","Cilantro","Pork belly"],"🥜",[0,15,10,10,45,75,0,10]],
+["Pear","#c9d77a","Fruit",["raw sliced","poached","roasted","pickled","caramelized"],["Walnut","Goat cheese","Honey","Thyme","Ginger","Parmesan","Hazelnut","Almond"],"🍐",[20,60,5,0,0,40,0,20]],
+["Peas","#7cc65b","Vegetable",["blanched","pureed","raw shoots","smashed","pickled"],["Mint","Ricotta","Lemon","Brown butter","Parmesan","Shallot","Tarragon","Scallop"],"🌱",[5,35,15,10,5,20,0,15]],
+["Pecan","#8b5a2b","Crunch",["toasted","crushed","as a paste","praline"],["Maple syrup","Sweet potato","Apple","Blue cheese","Brown butter","Pear"],"🌰",[0,15,10,10,50,75,0,10]],
+["Pine nut","#e8d6a0","Crunch",["toasted","crushed","as a paste","praline"],["Basil","Spinach","Parmesan","Lemon","Brown butter","Eggplant"],"🥜",[0,15,10,10,55,60,0,10]],
+["Pineapple","#f2d04a","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Chili","Lime","Pork belly","Ginger","Coconut","Cilantro"],"🍍",[55,65,5,0,0,30,0,20]],
+["Pistachio","#9ac36a","Crunch",["toasted","crushed","as a paste","praline"],["Honey","Lemon","Orange","Brown butter"],"🌰",[0,15,10,10,40,75,0,10]],
+["Plum","#6a2c5f","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Star anise","Cinnamon","Duck breast","Almond","Ginger","Pork belly"],"🟣",[35,60,5,0,0,30,0,20]],
+["Polenta","#f0c850","Starch",["boiled","toasted","fried","pureed"],["Parmesan","Mushroom","Brown butter","Sage","Pork belly","Tomato"],"🌽",[0,10,5,10,15,20,0,5]],
+["Pomegranate","#b5121b","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Mint","Lamb","Walnut","Yogurt","Orange","Feta"],"🔴",[50,40,5,0,0,25,0,20]],
+["Pork belly","#e3a5a0","Protein",["braised then seared","roasted","cured","fried"],["Apple","Ginger","Honey","Chili","Sherry vinegar","Fennel","Orange","Miso"],"🥓",[0,5,0,55,85,10,0,10]],
+["Pork tenderloin","#e8b8a0","Protein",["seared","roasted","grilled","braised","poached"],["Apple","Sage","Thyme","Mustard","Garlic","Maple syrup"],"🥩",[0,5,0,60,25,10,0,10]],
+["Potato","#d9b96a","Root",["crispy smashed","pureed","confit","roasted"],["Brown butter","Thyme","Garlic","Dill","Horseradish","Egg","Parmesan"],"🥔",[0,15,10,5,5,15,0,10]],
+["Radicchio","#7b1e3a","Vegetable",["roasted","grilled","raw","blanched","pickled"],["Balsamic vinegar","Honey","Walnut","Parmesan","Orange","Brown butter"],"🟣",[5,20,65,10,5,55,0,15]],
+["Radish","#d94f70","Root",["raw shaved","pickled","butter-braised","roasted","charred"],["Brown butter","Lemon","Mint","Dill","Yogurt","Egg"],"🔴",[0,40,20,10,5,65,30,10]],
+["Raspberry","#c2185b","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Chocolate","Almond","Lemon","Pistachio","Mascarpone","Mint"],"🍓",[45,45,5,0,0,30,0,20]],
+["Red wine vinegar","#8e2a3a","Acid",["splash to finish","reduced","in a vinaigrette"],["Shallot","Olive oil","Beef","Tomato","Lentils","Onion"],"🍷",[85,10,0,0,0,0,0,25]],
+["Rhubarb","#d94f5a","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Strawberry","Ginger","Orange","Yogurt","Honey","Pistachio"],"🌱",[75,20,5,0,0,30,0,20]],
+["Rice","#f4f0e6","Starch",["steamed","fried","toasted","as a base"],["Nori","Saffron","Soy sauce","Egg","Shrimp","Scallion"],"🍚",[0,10,5,10,5,20,0,5]],
+["Rice vinegar","#f2e6c0","Acid",["splash to finish","reduced","in a vinaigrette"],["Cucumber","Sesame","Ginger","Soy sauce","Radish","Tuna"],"🍶",[70,10,0,0,0,0,0,25]],
+["Ricotta","#faf6ec","Dairy",["fresh","whipped","baked","pan-fried","as a filling"],["Honey","Lemon","Basil","Mint","Pistachio"],"🥛",[5,20,0,20,50,0,0,5]],
+["Rosemary","#55704a","Herb",["infused in fat","fried","finely chopped"],["Garlic","Lemon","Honey","Thyme"],"🌿",[5,0,20,0,0,5,0,85]],
+["Saffron","#e86a1a","Spice",["toasted whole","ground","bloomed in fat","infused"],["Mussels","Lobster","Cream","Cardamom","Potato","Rice"],"🟠",[0,5,20,10,0,0,50,75]],
+["Sage","#8fa58a","Herb",["raw leaves","oil blended","fried","infused in fat"],["Brown butter","Squash","Pork tenderloin","Turkey","Apple","White beans"],"🌿",[5,0,20,0,0,5,0,75]],
+["Salmon","#f0876a","Protein",["seared skin-on","cured","roasted low and slow","smoked","raw"],["Dill","Lemon","Horseradish","Fennel","Miso","Honey","Yogurt"],"🐟",[0,5,0,55,65,10,0,10]],
+["Scallion","#7fbf5a","Aromatic",["raw","pickled","roasted","infused"],["Ginger","Soy sauce","Sesame","Chili","Egg","Miso"],"🧅",[5,5,10,15,0,25,25,60]],
+["Scallop","#f2e4d0","Protein",["seared","raw crudo","poached in butter"],["Brown butter","Lemon","Apple","Ginger","Chili"],"🐚",[0,35,0,50,25,10,0,10]],
+["Sesame","#e8dcc0","Crunch",["toasted","crushed","as a paste","praline"],["Soy sauce","Ginger","Cucumber","Honey","Tuna","Bok choy"],"⚪",[0,15,10,10,35,55,0,10]],
+["Shallot","#b9788f","Aromatic",["raw","pickled","crispy fried","roasted","confit"],["Sherry vinegar","Thyme","Brown butter","Mushroom","Parsley"],"🧅",[10,25,10,15,0,10,20,40]],
+["Sherry vinegar","#a0522d","Acid",["splash to finish","reduced to a glaze","in a vinaigrette"],["Walnut","Honey"],"🍷",[85,15,0,15,0,0,0,25]],
+["Shrimp","#f3a07a","Protein",["seared","grilled","poached","raw crudo","fried"],["Garlic","Lime","Chili","Cilantro","Parsley","Brown butter","Ginger","Smoked paprika","Soy sauce"],"🦐",[0,30,0,50,15,10,0,10]],
+["Smoked paprika","#b3401f","Spice",["bloomed in oil","as a rub","dusted","in a butter"],["Garlic","Honey","Lemon","Chicken thigh"],"🌶️",[0,15,10,25,0,0,25,55]],
+["Sourdough","#d8a860","Starch",["boiled","toasted","fried","pureed"],["Olive oil","Tomato","Burrata","Garlic","Egg","Mushroom"],"🍞",[10,10,5,10,5,40,0,5]],
+["Soy sauce","#3b2a1e","Umami",["as a marinade","glaze","in a dressing","reduced"],["Ginger","Garlic","Honey","Maple syrup","Chili"],"🍶",[10,15,0,90,10,0,0,10]],
+["Spinach","#2f6b2f","Vegetable",["wilted","raw","creamed","pureed","crisped"],["Garlic","Lemon","Ricotta","Egg","Parmesan","Walnut"],"🥬",[5,20,25,10,5,15,0,15]],
+["Squash","#e39b2d","Root",["roasted","pureed","charred","pickled","raw shaved"],["Brown butter","Maple syrup","Hazelnut","Thyme","Rosemary","Miso","Chili","Goat cheese","Apple"],"🎃",[0,50,10,10,5,20,0,10]],
+["Star anise","#5b3a29","Spice",["toasted whole","ground","bloomed in fat","infused"],["Plum","Pork belly","Duck breast","Orange","Ginger","Pear"],"⭐",[0,15,10,10,0,0,50,80]],
+["Strawberry","#d92b3a","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Balsamic vinegar","Basil","Black pepper","Ricotta","Mint","Rhubarb"],"🍓",[35,60,5,0,0,30,0,20]],
+["Sumac","#8e2a3a","Spice",["toasted whole","ground","bloomed in fat","infused"],["Lamb","Yogurt","Onion","Chicken thigh","Cucumber","Chickpeas"],"🔴",[50,5,10,10,0,0,50,55]],
+["Sunchoke","#c9a97a","Root",["roasted","pureed","raw shaved","pickled","charred"],["Brown butter","Hazelnut","Lemon","Thyme","Mushroom","Scallop"],"🌱",[0,25,10,15,5,30,0,10]],
+["Sunflower seeds","#c9a85a","Crunch",["toasted","crushed","as a paste","praline"],["Beet","Honey","Squash","Kale","Lemon","Carrot"],"🌻",[0,15,10,10,40,65,0,10]],
+["Sweet potato","#d2691e","Root",["roasted","whipped","fried","charred","pureed"],["Miso","Maple syrup","Smoked paprika","Lime","Chili","Brown butter","Cilantro","Yogurt"],"🍠",[0,60,10,10,5,30,0,10]],
+["Tahini","#c9a56b","Fat",["drizzled","infused","as a vinaigrette base"],["Lemon","Chickpeas","Garlic","Honey","Eggplant","Yogurt"],"🥜",[0,5,25,15,70,0,0,10]],
+["Tamarind","#7a4a2a","Acid",["splash to finish","reduced","in a vinaigrette"],["Chili","Lime","Coconut","Ginger","Shrimp","Date"],"🟤",[75,30,0,0,0,0,0,25]],
+["Tarragon","#6fa86a","Herb",["raw leaves","in a sauce","infused in vinegar"],["Lemon","Egg","Shallot","Chicken thigh","Scallop"],"🌿",[5,10,10,0,0,5,0,80]],
+["Thyme","#6b8e5a","Herb",["infused in fat","fried","raw leaves"],["Lemon","Garlic","Honey"],"🌿",[5,0,10,0,0,5,0,75]],
+["Tofu","#f1e8c9","Protein",["fried crisp","silken","marinated","seared"],["Soy sauce","Ginger","Scallion","Chili","Sesame","Miso"],"⬜",[0,5,0,15,15,10,0,10]],
+["Tomato","#d6332a","Fruit",["raw","roasted","confit","charred","pickled"],["Basil","Garlic","Eggplant","Sherry vinegar","Goat cheese","Parmesan","Chili","Egg"],"🍅",[55,40,5,35,0,30,0,20]],
+["Tuna","#b5344a","Protein",["seared","roasted","grilled","braised","poached"],["Sesame","Soy sauce","Avocado","Ginger","Lime","Scallion"],"🐟",[0,5,0,65,40,10,0,10]],
+["Turkey","#d9b08a","Protein",["seared","roasted","grilled","braised","poached"],["Sage","Thyme","Brown butter","Apple","Shallot","Mushroom"],"🦃",[0,5,0,45,30,10,0,10]],
+["Turmeric","#e8a317","Spice",["toasted whole","ground","bloomed in fat","infused"],["Ginger","Garlic","Coconut","Cauliflower","Chickpeas","Lemon"],"🟡",[0,5,20,10,0,0,50,45]],
+["Turnip","#e8dce8","Root",["roasted","pureed","raw shaved","pickled","charred"],["Brown butter","Honey","Thyme","Pork belly","Mustard","Apple"],"🌱",[0,20,25,10,5,30,0,10]],
+["Vanilla","#f1e3b5","Spice",["infused","paste","bean scraped"],["Strawberry","Peach","Cream","Honey","Scallop","Cherry"],"🍦",[0,30,10,10,0,0,0,80]],
+["Walnut","#a47c52","Crunch",["toasted","candied","crushed","pickled green"],["Honey","Brown butter"],"🌰",[0,15,30,10,45,75,0,10]],
+["Wasabi","#8cbf5a","Aromatic",["raw","pickled","roasted","infused"],["Tuna","Soy sauce","Avocado","Cucumber","Salmon","Rice vinegar"],"🟢",[5,5,10,15,0,10,75,40]],
+["Watercress","#2f6b3a","Brassica",["roasted","charred","raw shaved","pickled","pureed"],["Lemon","Egg","Salmon","Potato","Horseradish","Yogurt"],"🌿",[5,15,35,15,5,40,30,15]],
+["Watermelon","#e8556a","Fruit",["raw","roasted","grilled","pickled","caramelized"],["Feta","Mint","Lime","Chili","Cucumber","Basil"],"🍉",[10,55,5,0,0,45,0,20]],
+["White beans","#efe6cf","Protein",["seared","roasted","grilled","braised","poached"],["Rosemary","Garlic","Olive oil","Sage","Chorizo","Kale"],"🌱",[0,5,0,25,10,5,0,10]],
+["Yogurt","#fbfaf5","Dairy",["strained thick","whipped with oil","as a sauce","as a marinade"],["Mint","Dill","Cumin","Honey","Garlic","Lemon"],"🥛",[40,10,0,20,40,0,0,5]],
+["Zucchini","#6fa04b","Vegetable",["grilled","raw ribbons","fried","roasted","pickled"],["Lemon","Basil","Mint","Garlic","Ricotta","Parmesan","Chili","Feta"],"🥒",[5,15,15,10,5,25,0,15]]
+];
+/* Icons: one emoji per ingredient (swap any you like). Missing ones simply show no icon. */
+const ICONS = {};
+DATA.forEach(d => { if (d[5]) ICONS[d[0]] = d[5]; });
+const ic = n => ICONS[n] || "";
+const SIZE = {Protein:46,Root:36,Vegetable:36,Brassica:36,Fungi:36,Fruit:34,Dairy:28,Fat:26,Umami:24,Sweet:24,Acid:24,Herb:16,Crunch:16,Spice:16,Aromatic:16};
+const SAUCE = ["Dairy","Fat","Umami","Sweet","Acid"];
+function plateSVG(){
+  let s = '<svg viewBox="0 0 300 300" role="img" aria-label="Plate preview"><circle cx="150" cy="150" r="142" style="fill:var(--card);stroke:var(--border)" stroke-width="3"/><circle cx="150" cy="150" r="112" style="fill:none;stroke:var(--border)" stroke-width="1.5"/>';
+  if (!picks.length) return s + '<text x="150" y="156" text-anchor="middle" font-size="16" style="fill:var(--muted)" font-family="system-ui,sans-serif">Your plate</text></svg>';
+  const items = picks.map(p => ({o:by[p.name], r:SIZE[by[p.name].cat] || 26})).sort((a,b) => b.r - a.r);
+  items.forEach((it,i) => {
+    let x = 150, y = 150;
+    if (i > 0) { const a = (i-1)/Math.max(items.length-1,1)*Math.PI*2 - Math.PI/2; const R = it.r < 20 ? 100 : 78; x = 150 + R*Math.cos(a); y = 150 + R*Math.sin(a); }
+    const f = it.o.color, st = 'stroke="rgba(128,128,128,.5)" stroke-width="1"';
+    s += SAUCE.includes(it.o.cat) ? '<ellipse cx="'+x+'" cy="'+y+'" rx="'+it.r*1.35+'" ry="'+it.r*0.85+'" fill="'+f+'" '+st+'/>' : '<circle cx="'+x+'" cy="'+y+'" r="'+it.r+'" fill="'+f+'" '+st+'/>';
+    const e = ic(it.o.name);
+    if (e) s += '<text x="'+x+'" y="'+(y+it.r*0.32)+'" text-anchor="middle" font-size="'+it.r*0.9+'">'+e+'</text>';
+  });
+  return s + '</svg>';
+}
+/* ===== PREP EFFECTS: edit here, no coding needed =====
+Each line: ["words to look for in the preparation", {"trait": points, ...}]
+Traits: acid, sweet, bitter, umami, rich, crunch, heat, aroma.
+If a picked ingredient's preparation contains one of the words, those points are added to (+) or taken from (-) that ingredient's baseline profile.
+Example: roasting makes things sweeter and less crunchy, so roast adds sweet and takes away crunch. */
+const PREP_RULES = [
+["pickl,ferment,preserved,juice,vinaigrette,in vinegar",{"acid":35,"sweet":5}],
+["roast,char,grill,sear,caramel",{"sweet":15,"umami":12,"bitter":8,"crunch":-10,"aroma":5}],
+["smok",{"umami":10,"aroma":15,"bitter":5}],
+["fried,crisp,praline",{"crunch":35,"rich":25,"umami":5}],
+["raw,shaved,ribbons,tartare,crudo,matchsticks,sliced",{"crunch":10,"aroma":10,"rich":-5}],
+["puree,whipped,creamed,smash,braise,confit,slow,as a sauce,as a paste",{"crunch":-35,"rich":15,"sweet":5,"umami":5}],
+["poach,steam,blanch,soft-boiled,jammy",{"crunch":-15,"bitter":-10,"rich":5,"aroma":-10}],
+["cured",{"umami":20,"sweet":5,"acid":5}],
+["toast",{"crunch":10,"bitter":5,"sweet":5,"aroma":10}],
+["glaze,reduced",{"sweet":10,"umami":5}]
+];
+/* Site settings (set these in the Edit tab under Site settings): coffee = your Buy Me a Coffee link, form = a suggestion form link, email = where suggestions are sent */
+const SETTINGS = {"coffee":"","form":"","email":""};
+/* ===== END OF DATA ===== */
+
+const by = {}, links = {};
+DATA.forEach(d => { by[d[0]] = {name:d[0], color:d[1], cat:d[2], preps:d[3], prof:(d[6] || [0,0,0,0,0,0,0,0]).slice()}; links[d[0]] = new Map(); });
+DATA.forEach(d => d[4].forEach(o => {
+  const k = Array.isArray(o) ? o[0] : o, v = Array.isArray(o) ? Math.max(1, Math.min(100, +o[1] || 70)) : 70;
+  if (by[k]) { links[d[0]].set(k, v); links[k].set(d[0], v); }
+}));
+const names = Object.keys(by).sort();
+let picks = [], query = "";
+const $ = id => document.getElementById(id);
+
+function add(n){ if (!picks.find(p => p.name === n)) picks.push({name:n, prep:by[n].preps[0]}); $("q").value=""; query=""; render(); }
+function pairVal(a,b){ return links[a].get(b) || 0; }
+const TRAITS = ["acid","sweet","bitter","umami","rich","crunch","heat","aroma"];
+const TARGET = {acid:40, sweet:30, bitter:0, umami:40, rich:40, crunch:40, heat:0, aroma:30};
+const c0 = v => Math.max(0, Math.min(100, v));
+function eff(p){
+  const pr = (p.prep || "").toLowerCase(), out = by[p.name].prof.slice();
+  PREP_RULES.forEach(r => { if (r[0].split(",").some(w => w.trim() && pr.includes(w.trim()))) TRAITS.forEach((t,i) => { out[i] += r[1][t] || 0; }); });
+  return out.map(c0);
+}
+function dishLevels(){ const L = TRAITS.map(() => 0); picks.forEach(p => eff(p).forEach((v,i) => { L[i] += v; })); return L.map(v => Math.min(100, v)); }
+function gaps(){ const L = dishLevels(); return TRAITS.map((t,i) => Math.max(0, TARGET[t] - L[i])); }
+function fill(n){ const g = gaps(), tot = g.reduce((a,b) => a+b, 0); return tot ? by[n].prof.reduce((s,v,i) => s + Math.min(v, g[i]), 0) / tot : 0.5; }
+function adj(n){ return Math.round((fill(n) - 0.5) * 40); }
+function base(n){ return picks.reduce((s,p) => s + pairVal(n,p.name), 0); }
+function pct(n){ return Math.max(1, Math.min(100, Math.round(base(n) / picks.length) + adj(n))); }
+function score(n){ return base(n) > 0 ? pct(n) * picks.length : 0; }
+function dtxt(n){ const d = adj(n); return d ? ' (' + (d > 0 ? '+' : '') + d + ' balance)' : ''; }
+
+const PL = {Beet:"beets",Carrot:"carrots",Potato:"potatoes",Mushroom:"mushrooms",Tomato:"tomatoes",Egg:"eggs",Scallop:"scallops",Walnut:"walnuts",Hazelnut:"hazelnuts",Almond:"almonds",Pistachio:"pistachios",Radish:"radishes",Shallot:"shallots",Fig:"figs",Peach:"peaches",Pear:"pears",Apple:"apples",Leek:"leeks","Chicken thigh":"chicken thighs","Sweet potato":"sweet potatoes"};
+function phrase(p){
+  const o = by[p.name], nm = PL[p.name] || p.name.toLowerCase(), w = p.prep.split(" ")[0];
+  return (o.cat !== "Herb" && (/ed$/.test(w) || w === "raw")) ? w + " " + nm : nm;
+}
+function dishTitle(){
+  if (!picks.length) return "";
+  const big = picks.slice().sort((a,b) => (SIZE[by[b.name].cat]||26) - (SIZE[by[a.name].cat]||26))[0];
+  const rest = picks.filter(p => p !== big).map(phrase);
+  let t = phrase(big);
+  if (rest.length) t += " with " + (rest.length > 1 ? rest.slice(0,-1).join(", ") + " and " + rest[rest.length-1] : rest[0]);
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+function render(){
+  $("dtitle").textContent = dishTitle();
+  const tray = $("tray");
+  if (!picks.length) tray.innerHTML = '<p class="empty">Nothing yet — choose an ingredient below.</p>';
+  else tray.innerHTML = picks.map((p,i) => {
+    const o = by[p.name];
+    return '<div class="card"><div class="row"><span class="sw" style="background:'+o.color+'"></span><span class="ic">'+ic(o.name)+'</span><span class="name">'+o.name+'</span><span class="cat">'+o.cat+'</span><button class="x" data-rm="'+i+'" aria-label="Remove">×</button></div>' +
+      '<div class="chips">' + o.preps.map(pr => '<button class="chip'+(pr===p.prep?' on':'')+'" data-i="'+i+'" data-p="'+pr+'">'+pr+'</button>').join("") + '</div></div>';
+  }).join("") + '<div class="act"><button class="btn" id="copy">Copy dish</button><button class="btn" id="reset">Start over</button></div>';
+
+  $("strip").innerHTML = picks.length ? '<div class="strip">' + picks.map(p => '<div style="background:'+by[p.name].color+'"></div>').join("") + '</div>' : "";
+
+  const msgs = [];
+  if (picks.length) {
+    const g = gaps(), need = TRAITS.filter((t,i) => g[i] >= 20);
+    msgs.push(need.length ? '<p class="note warn">Consider adding: ' + need.join(", ") + '.</p>' : '<p class="note">Well balanced across the flavour profile.</p>');
+    const hv = [];
+    for (let i = 0; i < picks.length; i++) for (let j = i+1; j < picks.length; j++) { const v = pairVal(picks[i].name, picks[j].name); if (v) hv.push(v); }
+    if (hv.length) msgs.push('<p class="note">Harmony: <b>' + Math.round(hv.reduce((a,b) => a+b, 0) / hv.length) + '/100</b> (average of ' + hv.length + ' rated pairing' + (hv.length > 1 ? 's' : '') + ')</p>');
+    if (picks.length >= 3 && new Set(picks.map(p => p.prep)).size === 1) msgs.push('<p class="note warn">Every item uses the same preparation. Try varying texture and temperature.</p>');
+  }
+  $("balance").innerHTML = msgs.join("");
+  const LV = dishLevels();
+  $("profile").innerHTML = picks.length ? TRAITS.map((t,i) => '<div class="prow"><span>'+t+'</span><div class="bar"><div style="width:'+LV[i]+'%"></div></div><span>'+Math.round(LV[i])+'</span></div>').join("") : "";
+
+  $("sugTitle").textContent = picks.length ? "Pairs with your picks" : "Start with an ingredient";
+  const q = query.trim().toLowerCase();
+  let pool = names.filter(n => !picks.find(p => p.name === n));
+  if (q) pool = pool.filter(n => n.toLowerCase().includes(q));
+  else if (picks.length) pool = pool.filter(n => score(n) > 0);
+  pool.sort((a,b) => score(b) - score(a) || a.localeCompare(b));
+  $("list").innerHTML = pool.length ? '<div class="grid">' + pool.map(n => {
+    const s = score(n), o = by[n];
+    return '<button class="pick" data-add="'+n+'"><span class="sw" style="background:'+o.color+'"></span><span class="ic">'+ic(n)+'</span><span>'+n+'<small>'+o.cat+(s?' · '+pct(n)+'% match'+dtxt(n):'')+'</small></span></button>';
+  }).join("") + '</div>' : '<p class="empty">No matches.</p>';
+}
+
+document.addEventListener("click", e => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.add) add(t.dataset.add);
+  else if (t.dataset.rm) { picks.splice(+t.dataset.rm,1); render(); }
+  else if (t.dataset.p) { picks[+t.dataset.i].prep = t.dataset.p; render(); }
+  else if (t.id === "reset") { picks = []; render(); }
+  else if (t.id === "copy") {
+    const txt = picks.map(p => p.name + " (" + p.prep + ")").join(" + ");
+    try { navigator.clipboard.writeText(txt); t.textContent = "Copied"; setTimeout(() => t.textContent = "Copy dish", 1200); } catch (err) { t.textContent = "Copy not available"; }
+  }
+});
+$("q").addEventListener("input", e => { query = e.target.value; render(); });
+const EDITOR = false; /* true = your private copy with the editor; false = the version you put online */
+if (!EDITOR) document.querySelector(".tabs").style.display = "none";
+let mode = "build", editing = null, dirty = false, eq = "";
+function setMode(m){
+  mode = m; $("buildView").hidden = m !== "build"; $("editView").hidden = m !== "edit";
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.mode === m));
+  if (m === "edit") renderEdit(); else render();
+}
+function renderEdit(){
+  const sel = $("edSel");
+  if (sel.options.length !== names.length) sel.innerHTML = names.map(n => '<option>' + n + '</option>').join("");
+  if (!editing) editing = names[0];
+  sel.value = editing;
+  $("catList").innerHTML = [...new Set(names.map(n => by[n].cat))].sort().map(c => '<option value="'+c+'">').join("");
+  delArmed = false; $("delBtn").textContent = "Delete this ingredient";
+  fillDetails(); renderRules(); fillSettings(); renderCats();
+  const q = eq.trim().toLowerCase();
+  $("edList").innerHTML = names.filter(n => n !== editing && (!q || n.toLowerCase().includes(q))).map(n => {
+    const v = links[editing].get(n) || 0;
+    return '<div class="erow"><label><input type="checkbox" data-ck="'+n+'"'+(v?' checked':'')+'><span class="sw" style="background:'+by[n].color+'"></span><span>'+ic(n)+' '+n+'</span></label><input type="range" min="1" max="100" value="'+(v||70)+'" data-sl="'+n+'"'+(v?'':' disabled')+'><output>'+(v||'')+'</output></div>';
+  }).join("");
+}
+function setPair(a,b,v){
+  if (v) { links[a].set(b,v); links[b].set(a,v); } else { links[a].delete(b); links[b].delete(a); }
+  dirty = true;
+}
+function exportData(){
+  const L = names.map(n => {
+    const o = by[n];
+    const pr = [...links[n].entries()].sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0])).map(e => '["'+e[0]+'",'+e[1]+']').join(",");
+    return '["'+n+'","'+o.color+'","'+o.cat+'",'+JSON.stringify(o.preps)+',['+pr+'],"'+(ICONS[n]||'')+'",'+JSON.stringify(o.prof)+']';
+  });
+  const R = PREP_RULES.map(r => '["' + clean(r[0]) + '",' + JSON.stringify(r[1]) + ']').join(',\n');
+  return 'const DATA = [\n' + L.join(',\n') + '\n];\n/* Prep effects: each line is ["words to look for", {"Category": points}] */\nconst PREP_RULES = [\n' + R + '\n];\nconst SETTINGS = ' + JSON.stringify(SETTINGS) + ';';
+}
+const clean = s => s.replace(/["\\]/g, "").trim();
+let delArmed = false;
+function addIngredient(){
+  const msg = $("addMsg");
+  let name = clean($("addName").value);
+  if (!name) { msg.textContent = "Please enter a name."; return; }
+  name = name.charAt(0).toUpperCase() + name.slice(1);
+  if (names.some(n => n.toLowerCase() === name.toLowerCase())) { msg.textContent = name + " already exists."; return; }
+  const preps = $("addPreps").value.split(",").map(clean).filter(Boolean);
+  by[name] = {name, color: $("addColor").value || "#cccccc", cat: clean($("addCat").value) || "Other", preps: preps.length ? preps : ["raw"], prof:[0,0,0,0,0,0,0,0]};
+  links[name] = new Map();
+  const icon = $("addIcon").value.trim(); if (icon) ICONS[name] = icon;
+  names.push(name); names.sort();
+  dirty = true; editing = name; eq = ""; $("edQ").value = "";
+  ["addName","addCat","addPreps","addIcon"].forEach(id => $(id).value = "");
+  msg.textContent = "Added " + name + ". Set its flavour profile under “Edit this ingredient’s details”, then tick what it pairs with below.";
+  renderEdit();
+}
+function deleteIngredient(btn){
+  if (!delArmed) { delArmed = true; btn.textContent = "Click again to delete " + editing; return; }
+  const n = editing;
+  links[n].forEach((v,k) => links[k].delete(n));
+  delete links[n]; delete by[n]; delete ICONS[n];
+  picks = picks.filter(p => p.name !== n);
+  names.splice(names.indexOf(n), 1);
+  editing = names[0]; dirty = true; renderEdit();
+}
+let browseCat = null;
+function renderCats(){
+  const cats = [...new Set(names.map(n => by[n].cat))].sort();
+  if (!browseCat || !cats.includes(browseCat)) browseCat = (by[editing] && by[editing].cat) || cats[0];
+  $("catChips").innerHTML = cats.map(c => '<button class="chip'+(c===browseCat?' on':'')+'" data-bc="'+c+'">'+c+' ('+names.filter(n => by[n].cat === c).length+')</button>').join("");
+  $("catItems").innerHTML = names.filter(n => by[n].cat === browseCat).map(n => '<button class="chip'+(n===editing?' on':'')+'" data-be="'+n+'">'+ic(n)+' '+n+' · '+links[n].size+'</button>').join("");
+}
+function fillDetails(){
+  const o = by[editing]; if (!o) return;
+  $("dColor").value = o.color; $("dCat").value = o.cat; $("dPreps").value = o.preps.join(", "); $("dIcon").value = ICONS[editing] || "";
+  $("dTraits").innerHTML = TRAITS.map((t,i) => '<div class="erow"><label style="text-transform:capitalize">'+t+'</label><input type="range" min="0" max="100" value="'+o.prof[i]+'" data-tr="'+i+'"><output>'+o.prof[i]+'</output></div>').join("");
+}
+function renderRules(){
+  $("ruleList").innerHTML = PREP_RULES.map((r,i) =>
+    '<details class="card"><summary><b>' + (r[0] || "(new rule)") + '</b></summary>' +
+    '<div class="adds"><input data-rw="'+i+'" value="'+r[0]+'" placeholder="Words to look for, separated by commas"></div>' +
+    TRAITS.map(t => { const v = r[1][t] || 0; return '<div class="erow"><label style="text-transform:capitalize">'+t+'</label><input type="range" min="-60" max="60" value="'+v+'" data-rc="'+i+'|'+t+'"><output>'+(v>0?'+':'')+v+'</output></div>'; }).join("") +
+    '<div class="act"><button class="btn" data-rx="'+i+'">Delete rule</button></div></details>'
+  ).join("");
+}
+$("dColor").addEventListener("input", e => { by[editing].color = e.target.value; dirty = true; });
+$("dCat").addEventListener("input", e => { by[editing].cat = clean(e.target.value) || "Other"; dirty = true; });
+$("dPreps").addEventListener("input", e => { const p = e.target.value.split(",").map(clean).filter(Boolean); if (p.length) { by[editing].preps = p; dirty = true; } });
+$("dIcon").addEventListener("input", e => { const v = e.target.value.trim(); if (v) ICONS[editing] = v; else delete ICONS[editing]; dirty = true; });
+$("dTraits").addEventListener("input", e => {
+  const t = e.target; if (t.dataset.tr === undefined) return;
+  by[editing].prof[+t.dataset.tr] = +t.value; t.nextElementSibling.textContent = t.value; dirty = true;
+});
+$("ruleList").addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.rw !== undefined) { PREP_RULES[+t.dataset.rw][0] = clean(t.value); dirty = true; }
+  else if (t.dataset.rc) { const k = t.dataset.rc.split("|"), v = Math.max(-60, Math.min(60, +t.value || 0)); if (v) PREP_RULES[+k[0]][1][k[1]] = v; else delete PREP_RULES[+k[0]][1][k[1]]; t.nextElementSibling.textContent = (v > 0 ? "+" : "") + v; dirty = true; }
+});
+document.addEventListener("click", e => {
+  const t = e.target.closest("button"); if (!t) return; const d = t.dataset;
+  if (d.bc) { browseCat = d.bc; renderCats(); }
+  else if (d.be) { editing = d.be; renderEdit(); if ($("edSel").scrollIntoView) $("edSel").scrollIntoView({block:"start"}); }
+  else if (t.id === "catAdd") { $("addBox").open = true; $("addCat").value = browseCat || ""; $("addName").focus(); }
+  else if (d.rd) { const k = d.rd.split("|"); delete PREP_RULES[+k[0]][1][k[1]]; dirty = true; renderRules(); }
+  else if (d.ra) { const c = t.parentNode.querySelector("select").value; if (!(c in PREP_RULES[+d.ra][1])) PREP_RULES[+d.ra][1][c] = 10; dirty = true; renderRules(); }
+  else if (d.rx) { PREP_RULES.splice(+d.rx, 1); dirty = true; renderRules(); }
+  else if (t.id === "addRule") { PREP_RULES.push(["newword", {}]); dirty = true; renderRules(); }
+});
+$("edSel").addEventListener("change", e => { editing = e.target.value; renderEdit(); });
+$("edQ").addEventListener("input", e => { eq = e.target.value; renderEdit(); });
+$("edList").addEventListener("change", e => {
+  const t = e.target; if (!t.dataset.ck) return;
+  const row = t.closest(".erow"), sl = row.querySelector("input[type=range]"), out = row.querySelector("output");
+  sl.disabled = !t.checked; out.textContent = t.checked ? sl.value : "";
+  setPair(editing, t.dataset.ck, t.checked ? +sl.value : 0);
+});
+$("edList").addEventListener("input", e => {
+  const t = e.target; if (!t.dataset.sl) return;
+  t.nextElementSibling.textContent = t.value; setPair(editing, t.dataset.sl, +t.value);
+});
+document.addEventListener("click", e => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.mode) setMode(t.dataset.mode);
+  else if (t.id === "addBtn") addIngredient();
+  else if (t.id === "delBtn") deleteIngredient(t);
+  else if (t.id === "exportBtn") {
+    const ta = $("out"); ta.value = exportData(); ta.hidden = false; ta.focus(); ta.select();
+    try { navigator.clipboard.writeText(ta.value).catch(() => {}); t.textContent = "Copied (or press Ctrl+C)"; } catch (err) {}
+    dirty = false;
+  }
+});
+window.addEventListener("beforeunload", e => { if (dirty) { e.preventDefault(); e.returnValue = ""; } });
+const okUrl = u => /^https:\/\/\S+$/.test(u || "");
+function applySettings(){
+  const c = okUrl(SETTINGS.coffee), f = okUrl(SETTINGS.form), em = /^\S+@\S+\.\S+$/.test(SETTINGS.email || "");
+  $("coffeeBtn").hidden = !c; if (c) $("coffeeBtn").href = SETTINGS.coffee;
+  $("sugBox").hidden = !(f || em);
+  $("sgFields").hidden = f;
+  $("sgSend").textContent = f ? "Open the suggestion form" : "Send suggestion";
+}
+function fillSettings(){ $("sCoffee").value = SETTINGS.coffee || ""; $("sForm").value = SETTINGS.form || ""; $("sEmail").value = SETTINGS.email || ""; }
+[["sCoffee","coffee"],["sForm","form"],["sEmail","email"]].forEach(a => $(a[0]).addEventListener("input", e => { SETTINGS[a[1]] = e.target.value.trim(); dirty = true; applySettings(); }));
+$("sgSend").addEventListener("click", () => {
+  if (okUrl(SETTINGS.form)) { window.open(SETTINGS.form, "_blank", "noopener"); return; }
+  const txt = $("sgText").value.trim(); if (!txt) { $("sgText").focus(); return; }
+  const dish = $("sgDish").checked && picks.length ? "\n\nMy current dish: " + dishTitle() + " (" + picks.map(p => p.name + " - " + p.prep).join("; ") + ")" : "";
+  location.href = "mailto:" + SETTINGS.email + "?subject=" + encodeURIComponent("Dish Builder suggestion: " + $("sgType").value) + "&body=" + encodeURIComponent(txt + dish);
+});
+applySettings();
+render();
+</script>
+</body>
+</html>

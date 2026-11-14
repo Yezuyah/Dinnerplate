@@ -85,6 +85,7 @@ textarea{width:100%;margin-top:10px;background:var(--card);color:var(--fg);borde
 .plate{max-width:320px;margin:0 auto 12px}.plate svg{width:100%;height:auto;display:block}.ic{font-size:1.25rem;line-height:1}
 .empty{color:var(--muted);font-family:system-ui,sans-serif;font-size:.92rem}
 </style>
+<script>window.addEventListener("error",function(e){var d=document.createElement("div");d.style.cssText="margin:12px;padding:12px;border:2px solid #b4491f;border-radius:8px;font:14px system-ui,sans-serif";d.textContent="Something in this file is broken: "+e.message+" (line "+e.lineno+"). If you just pasted data, make sure you replaced only the block between const DATA and the END OF DATA line.";(document.body||document.documentElement).prepend(d);});</script>
 </head>
 <body>
 <main>
@@ -223,6 +224,26 @@ const PREP_RULES = [
 ];
 const SETTINGS = {"coffee":"","form":"","email":""};
 /* ===== END OF DATA ===== */
+/* Icons: one emoji per ingredient (swap any you like). Missing ones simply show no icon. */
+const ICONS = {};
+DATA.forEach(d => { if (d[5]) ICONS[d[0]] = d[5]; });
+const ic = n => ICONS[n] || "";
+const SIZE = {Protein:46,Root:36,Vegetable:36,Brassica:36,Fungi:36,Fruit:34,Dairy:28,Fat:26,Umami:24,Sweet:24,Acid:24,Herb:16,Crunch:16,Spice:16,Aromatic:16};
+const SAUCE = ["Dairy","Fat","Umami","Sweet","Acid"];
+function plateSVG(){
+  let s = '<svg viewBox="0 0 300 300" role="img" aria-label="Plate preview"><circle cx="150" cy="150" r="142" style="fill:var(--card);stroke:var(--border)" stroke-width="3"/><circle cx="150" cy="150" r="112" style="fill:none;stroke:var(--border)" stroke-width="1.5"/>';
+  if (!picks.length) return s + '<text x="150" y="156" text-anchor="middle" font-size="16" style="fill:var(--muted)" font-family="system-ui,sans-serif">Your plate</text></svg>';
+  const items = picks.map(p => ({o:by[p.name], r:SIZE[by[p.name].cat] || 26})).sort((a,b) => b.r - a.r);
+  items.forEach((it,i) => {
+    let x = 150, y = 150;
+    if (i > 0) { const a = (i-1)/Math.max(items.length-1,1)*Math.PI*2 - Math.PI/2; const R = it.r < 20 ? 100 : 78; x = 150 + R*Math.cos(a); y = 150 + R*Math.sin(a); }
+    const f = it.o.color, st = 'stroke="rgba(128,128,128,.5)" stroke-width="1"';
+    s += SAUCE.includes(it.o.cat) ? '<ellipse cx="'+x+'" cy="'+y+'" rx="'+it.r*1.35+'" ry="'+it.r*0.85+'" fill="'+f+'" '+st+'/>' : '<circle cx="'+x+'" cy="'+y+'" r="'+it.r+'" fill="'+f+'" '+st+'/>';
+    const e = ic(it.o.name);
+    if (e) s += '<text x="'+x+'" y="'+(y+it.r*0.32)+'" text-anchor="middle" font-size="'+it.r*0.9+'">'+e+'</text>';
+  });
+  return s + '</svg>';
+}
 
 const by = {}, links = {}, pnotes = {};
 const pk = (a, b) => a < b ? a + "|" + b : b + "|" + a;
